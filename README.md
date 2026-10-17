@@ -106,3 +106,7 @@ Primary API documentation: https://apidocs.shiprocket.in/?version=latest and htt
 
 Verification includes production builds, reporting and invoice tests, rendered PDF review, and browser checks of product details, cart totals, wishlist, stock fields and mobile layouts. Live database transactions/authentication and Shiprocket calls still need validation with your own configured accounts.
 # Swaadha
+
+## Header and login popup
+
+The storefront header stays at the top while scrolling. Signed-out visitors see **Login / Register**, opening an accessible modal with both forms. **My account** and the header checkout shortcut appear after authentication. Cart sign-in opens the same modal and preserves the saved cart. The modal closes after a successful session; checkout login continues to `/cart`. Escape, the close button, and clicking the backdrop dismiss the popup. Live login/registration require Supabase configuration; no demo session is fabricated.
