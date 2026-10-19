@@ -16,5 +16,5 @@ export function HomeMotion({children}:{children:React.ReactNode}){
   }
   setup();preference.addEventListener('change',setup);return()=>{stop();preference.removeEventListener('change',setup)};
  },[]);
- return <div ref={root} className="family-home">{children}</div>
+ return <div ref={root} className="family-home premium-home">{children}</div>
 }

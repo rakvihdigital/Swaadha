@@ -5,7 +5,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowUpRight, BarChart3, CalendarDays, Check, ChevronRight, Download, LayoutDashboard, LogOut, Package, Pencil, Plus, Search, ShieldCheck, ShoppingBag, Tags, Trash2, Users, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ShippingPanel } from '@/components/shipping-panel';
-import { demoProducts, Product, withDetails } from '@/lib/products';
+import { demoProducts, photoCollection, Product, withDetails } from '@/lib/products';
 import { calculateMetrics, Category, demoCategories, exportCsv, Member, Metrics, money, Order, sampleOrders, statuses, Tab, tabs } from '@/lib/admin';
 
 const navigation = [
@@ -49,7 +49,7 @@ export default function Admin(){
 
   useEffect(()=>{
     if(!supabase){
-      try{const saved=JSON.parse(localStorage.getItem('swaadha-admin-demo-v2')||'null');setProducts((saved?.products??demoProducts).map(withDetails));setCategories(saved?.categories??demoCategories);setOrders(saved?.orders??sampleOrders());setMembers(saved?.members??[demoOwner,{user_id:'demo-staff',name:'Sample kitchen assistant',email:'assistant@example.com',role:'staff',permissions:['products','orders']}])}catch{setProducts(demoProducts.map(withDetails));setCategories(demoCategories);setOrders(sampleOrders());setMembers([demoOwner])}
+      try{const saved=JSON.parse(localStorage.getItem('swaadha-admin-demo-v2')||'null');setProducts(photoCollection(saved?.products??demoProducts).map(withDetails));setCategories(saved?.categories??demoCategories);setOrders(saved?.orders??sampleOrders());setMembers(saved?.members??[demoOwner,{user_id:'demo-staff',name:'Sample kitchen assistant',email:'assistant@example.com',role:'staff',permissions:['products','orders']}])}catch{setProducts(demoProducts.map(withDetails));setCategories(demoCategories);setOrders(sampleOrders());setMembers([demoOwner])}
       setMember(demoOwner);setReady(true);return;
     }
     const client=supabase;let disposed=false;
