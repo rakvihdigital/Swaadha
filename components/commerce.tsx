@@ -1,5 +1,6 @@
 'use client';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { Check } from 'lucide-react';
 import { Product } from '@/lib/products';
 export type CartItem={product:Product;quantity:number};
 type Commerce={cart:CartItem[];wishlist:Product[];ready:boolean;notice:string;add:(p:Product,quantity?:number)=>void;quantity:(id:string,quantity:number)=>void;remove:(id:string)=>void;clear:()=>void;toggleWish:(p:Product)=>void};
@@ -12,6 +13,6 @@ export function CommerceProvider({children}:{children:React.ReactNode}){
  function add(p:Product,amount=1){const existing=cart.find(i=>i.product.id===p.id)?.quantity??0;const max=Math.min(p.stock??0,100);if(!Number.isInteger(amount)||amount<1||existing+amount>max){setNotice(`Only ${max} packs of ${p.name} are available.`);return}setCart(list=>{const exists=list.find(i=>i.product.id===p.id);return exists?list.map(i=>i.product.id===p.id?{product:p,quantity:i.quantity+amount}:i):[...list,{product:p,quantity:amount}]});setNotice(`${p.name} added to your cart.`)}
  function quantity(id:string,n:number){if(!Number.isInteger(n)||n<1||n>100)return;setCart(list=>list.map(i=>i.product.id===id?{...i,quantity:n}:i))}
  function toggleWish(p:Product){const exists=wishlist.some(i=>i.id===p.id);setWishlist(list=>exists?list.filter(i=>i.id!==p.id):[...list,p]);setNotice(exists?'Removed from your wishlist.':`${p.name} saved to your wishlist.`)}
- return <Context.Provider value={{cart,wishlist,ready,notice,add,quantity,remove:id=>setCart(list=>list.filter(i=>i.product.id!==id)),clear:()=>setCart([]),toggleWish}}>{children}{notice&&<div className="commerce-toast" role="status">{notice}</div>}</Context.Provider>
+ return <Context.Provider value={{cart,wishlist,ready,notice,add,quantity,remove:id=>setCart(list=>list.filter(i=>i.product.id!==id)),clear:()=>setCart([]),toggleWish}}>{children}{notice&&<div className="sw-toast" role="status" key={notice}><Check size={15}/>{notice}</div>}</Context.Provider>
 }
 export function useCommerce(){const value=useContext(Context);if(!value)throw new Error('Commerce provider is missing');return value}

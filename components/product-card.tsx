@@ -1,6 +1,61 @@
 'use client';
 import Link from 'next/link';
-import { ArrowUpRight, Heart, Leaf, ShoppingBag } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowUpRight, Heart, Plus } from 'lucide-react';
 import { Product } from '@/lib/products';
 import { useCommerce } from './commerce';
-export function ProductCard({product:p}:{product:Product}){const {add,toggleWish,wishlist}=useCommerce();const wished=wishlist.some(w=>w.id===p.id);const inStock=(p.stock??0)>0;return <article className={`product-card ${p.image.startsWith('/images/products/')?'packaged-product':''}`}><div className="product-photo"><Link href={`/products/${encodeURIComponent(p.id)}`} aria-label={`View ${p.name} details`}><img src={p.image} alt={p.name} loading="lazy"/></Link><button className={`wishlist-toggle ${wished?'saved':''}`} aria-label={`${wished?'Remove':'Save'} ${p.name} ${wished?'from':'to'} wishlist`} aria-pressed={wished} onClick={()=>toggleWish(p)}><Heart size={17} fill={wished?'currentColor':'none'}/></button></div><div className="product-crafted"><Leaf size={12}/><span>Homemade with care</span></div><div className="product-meta"><span>{p.category}</span><span>{p.weight}</span></div><div className="product-title"><h3><Link href={`/products/${encodeURIComponent(p.id)}`}>{p.name}</Link></h3><span>₹{p.price}</span></div><p>{p.description}</p><div className="stock-label" data-empty={!inStock}>{inStock?`${p.stock} packs available`:'Currently out of stock'}</div><div className="product-card-actions"><button className="product-order-button" disabled={!inStock} onClick={()=>add(p)}><ShoppingBag size={14}/>{inStock?'Add to cart':'Sold out'}</button><Link className="product-whatsapp" href={`/products/${encodeURIComponent(p.id)}`}>View details <ArrowUpRight size={13}/></Link></div></article>}
+
+export const FALLBACK_IMAGE = '/images/hero.webp';
+
+export function ProductCard({ product: p }: { product: Product }) {
+  const { add, toggleWish, wishlist } = useCommerce();
+  const [src, setSrc] = useState(p.image || FALLBACK_IMAGE);
+  const wished = wishlist.some((w) => w.id === p.id);
+  const stock = p.stock ?? 0;
+  const href = `/products/${encodeURIComponent(p.id)}`;
+
+  return (
+    <article className="sw-card" data-reveal="up">
+      <div className="sw-card-inner" data-tilt>
+        <div className="sw-card-media">
+          <Link href={href} aria-label={`View ${p.name} details`} tabIndex={-1}>
+            <img src={src} alt={p.name} loading="lazy" onError={() => setSrc(FALLBACK_IMAGE)} />
+          </Link>
+          <span className="sw-card-chip">{p.category}</span>
+          <button
+            className={`sw-card-wish ${wished ? 'is-saved' : ''}`}
+            aria-label={`${wished ? 'Remove' : 'Save'} ${p.name} ${wished ? 'from' : 'to'} wishlist`}
+            aria-pressed={wished}
+            onClick={() => toggleWish(p)}
+          >
+            <Heart size={17} fill={wished ? 'currentColor' : 'none'} />
+          </button>
+          <button className="sw-card-add" disabled={stock < 1} onClick={() => add(p)}>
+            <Plus size={16} />
+            <span>{stock > 0 ? 'Add to cart' : 'Sold out'}</span>
+          </button>
+          <span className="sw-card-glare" aria-hidden="true" />
+        </div>
+        <div className="sw-card-body">
+          <div className="sw-card-meta">
+            <span>{p.weight}</span>
+            <span className={stock > 0 ? 'is-in-stock' : 'is-out'}>
+              <i />
+              {stock > 0 ? (stock < 10 ? `Only ${stock} left` : 'In stock') : 'Sold out'}
+            </span>
+          </div>
+          <h3>
+            <Link href={href}>{p.name}</Link>
+          </h3>
+          <p>{p.description}</p>
+          <div className="sw-card-foot">
+            <strong>₹{p.price}</strong>
+            <Link href={href} className="sw-card-more">
+              Details <ArrowUpRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}

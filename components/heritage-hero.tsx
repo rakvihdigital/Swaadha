@@ -1,160 +1,167 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { ArrowLeft, ArrowRight, Pause, Play } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Pause, Play } from 'lucide-react';
 import { loadBanners } from '@/lib/storefront';
 import { Banner } from '@/lib/admin';
+import { Seal } from './motion';
+
+const fallback: Banner = {
+  id: 'brand',
+  tag: 'THE SWAADHA FAMILY KITCHEN',
+  title: 'Rooted in tradition,',
+  em: 'made with love.',
+  text: 'Bringing authentic flavors and fresh ingredients from our family kitchen to yours.',
+  image: '/images/hero.webp',
+  label: 'Family favorites',
+  href: '/products',
+  display_order: 1,
+  is_active: true,
+};
 
 export function HeritageHero() {
-  const [slides, setSlides] = useState<Banner[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [slides, setSlides] = useState<Banner[] | null>(null);
   const [active, setActive] = useState(0);
+  const [previous, setPrevious] = useState<number | null>(null);
   const [paused, setPaused] = useState(false);
+  const [cycled, setCycled] = useState(false);
+  const hero = useRef<HTMLElement>(null);
 
   useEffect(() => {
     loadBanners()
-      .then((data) => {
-        setSlides(data || []);
-        setLoaded(true);
-      })
-      .catch(() => setLoaded(true));
+      .then((data) => setSlides(data.length ? data : [fallback]))
+      .catch(() => setSlides([fallback]));
   }, []);
 
+  // Scroll-linked exit and pointer-linked drift, written straight to CSS variables.
   useEffect(() => {
-    const preference = matchMedia('(prefers-reduced-motion: reduce)');
-    if (paused || preference.matches || slides.length <= 1) return;
-    const timer = setInterval(() => {
-      setActive((i) => (i + 1) % slides.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [paused, slides.length]);
+    const el = hero.current;
+    if (!el || !document.documentElement.classList.contains('motion')) return;
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        el.style.setProperty('--hp', Math.min(1, window.scrollY / el.offsetHeight).toFixed(3));
+      });
+    };
+    const onMove = (e: PointerEvent) => {
+      el.style.setProperty('--hx', (e.clientX / window.innerWidth - 0.5).toFixed(3));
+      el.style.setProperty('--hy', (e.clientY / window.innerHeight - 0.5).toFixed(3));
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    el.addEventListener('pointermove', onMove);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      el.removeEventListener('pointermove', onMove);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
 
-  if (!loaded) {
-    return <section className="heritage-hero" style={{ minHeight: 400 }} aria-label="Loading hero..." />;
+  const list = slides ?? [];
+  const current = active >= list.length ? 0 : active;
+  const s = list[current];
+
+  function go(i: number) {
+    if (!list.length || i === current) return;
+    setPrevious(current);
+    setCycled(true);
+    setActive((i + list.length) % list.length);
   }
-
-  // If no banners are added yet in the database, show clean brand hero
-  if (slides.length === 0) {
-    return (
-      <section className="heritage-hero" aria-label="Welcome to Swaadha">
-        <div className="heritage-slide">
-          <div className="heritage-shade" />
-          <div className="heritage-copy" style={{ maxWidth: 700, padding: '40px 0' }}>
-            <span>THE SWAADHA FAMILY KITCHEN</span>
-            <h1>
-              Rooted in tradition,
-              <br />
-              <em>made with love.</em>
-            </h1>
-            <div className="heritage-ornament" aria-hidden="true">
-              <span />✳<span />
-            </div>
-            <p>Bringing authentic flavors and fresh ingredients from our family kitchen to yours.</p>
-            <div>
-              <Link className="heritage-shop" href="/products">
-                EXPLORE OUR KITCHEN <ArrowRight size={16} />
-              </Link>
-              <Link className="heritage-story" href="/our-story">
-                OUR STORY
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  const currentIndex = active >= slides.length ? 0 : active;
-  const s = slides[currentIndex];
 
   return (
-    <section className="heritage-hero" aria-label="Featured kitchen collections" aria-roledescription="carousel">
-      <div className="heritage-slide" key={s.id || currentIndex}>
-        <img className="heritage-backdrop" src={s.image} alt={s.label || s.title} fetchPriority="high" />
-        <div className="heritage-shade" />
-        <div className="banner-photo-note">
-          <span>THE SWAADHA WAY</span>
-          <b>
-            Good food.
-            <br />
-            Beautiful memories.
-          </b>
-        </div>
-        <div className="heritage-copy">
-          <span>{s.tag}</span>
-          <h1>
-            {s.title}
-            <br />
-            <em>{s.em}</em>
-          </h1>
-          <div className="heritage-ornament" aria-hidden="true">
-            <span />✳<span />
+    <section
+      ref={hero}
+      className={`sw-hero ${paused ? 'is-paused' : ''} ${cycled ? 'is-cycled' : ''}`}
+      aria-label="Featured kitchen collections"
+      aria-roledescription={list.length > 1 ? 'carousel' : undefined}
+    >
+      <div className="sw-hero-media">
+        {list.map((slide, i) => (
+          <div
+            key={slide.id || i}
+            className={`sw-hero-slide ${i === current ? 'is-active' : ''} ${i === previous && i !== current ? 'is-leaving' : ''}`}
+            aria-hidden={i !== current}
+          >
+            <img src={slide.image} alt={i === current ? slide.label || slide.title : ''} fetchPriority={i === 0 ? 'high' : 'low'} />
           </div>
-          <p>{s.text}</p>
-          <div>
-            <Link className="heritage-shop" href={s.href || '/products'}>
-              EXPLORE THE COLLECTION <ArrowRight size={16} />
-            </Link>
-            <Link className="heritage-story" href="/our-story">
-              OUR STORY
-            </Link>
-          </div>
-        </div>
+        ))}
       </div>
-      <div className="heritage-frame" aria-hidden="true" />
-      <div className="heritage-navigation">
-        <span className="heritage-navigation-note">FAMILY RECIPES · FRESHLY PREPARED</span>
-        <div className="heritage-controls">
-          <span className="heritage-count">
-            0{currentIndex + 1}
-            <small> / 0{slides.length}</small>
+      <div className="sw-hero-shade" />
+      <div className="sw-grain" />
+
+      {s && (
+        <div className="sw-hero-content" key={s.id || current}>
+          <span className="sw-hero-tag">
+            <i />
+            {s.tag}
           </span>
-          <div className="heritage-progress">
-            {slides.map((slide, i) => (
+          <h1 className="sw-hero-title">
+            <span className="sw-line">
+              <span>{s.title}</span>
+            </span>{' '}
+            <span className="sw-line">
+              <span>
+                <em>{s.em}</em>
+              </span>
+            </span>
+          </h1>
+          <p>{s.text}</p>
+          <div className="sw-hero-ctas">
+            <Link className="sw-btn is-gold" href={s.href || '/products'} data-magnetic>
+              <span>Explore the collection</span>
+              <ArrowUpRight size={18} />
+            </Link>
+            <Link className="sw-btn is-ghost-light" href="/our-story" data-magnetic>
+              <span>Our story</span>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <Seal className="sw-hero-seal" />
+
+      {list.length > 1 && (
+        <div className="sw-hero-foot">
+          <div className="sw-hero-count" aria-live="polite">
+            <b>0{current + 1}</b>
+            <span>/ 0{list.length}</span>
+          </div>
+          <div className="sw-hero-bars">
+            {list.map((slide, i) => (
               <button
                 key={slide.id || i}
+                className={i === current ? 'is-active' : i < current ? 'is-done' : ''}
                 aria-label={`Show ${slide.label || slide.title}`}
-                aria-pressed={currentIndex === i}
-                className={currentIndex === i ? 'active' : ''}
-                onClick={() => setActive(i)}
-              />
+                aria-pressed={i === current}
+                onClick={() => go(i)}
+              >
+                <span className="sw-hero-bar">
+                  <i onAnimationEnd={i === current ? () => go(current + 1) : undefined} />
+                </span>
+                <small>{slide.label || slide.title}</small>
+              </button>
             ))}
           </div>
-          <button
-            aria-label="Previous collection"
-            onClick={() => setActive((currentIndex + slides.length - 1) % slides.length)}
-          >
-            <ArrowLeft size={17} />
-          </button>
-          <button
-            aria-label="Next collection"
-            onClick={() => setActive((currentIndex + 1) % slides.length)}
-          >
-            <ArrowRight size={17} />
-          </button>
-          <button
-            aria-label={paused ? 'Play slideshow' : 'Pause slideshow'}
-            onClick={() => setPaused(!paused)}
-          >
-            {paused ? <Play size={14} /> : <Pause size={14} />}
-          </button>
-        </div>
-        <div className="heritage-thumbnails">
-          {slides.map((slide, i) => (
-            <button
-              key={slide.id || i}
-              aria-label={`View ${slide.label || slide.title}`}
-              aria-pressed={i === currentIndex}
-              className={i === currentIndex ? 'active' : ''}
-              onClick={() => setActive(i)}
-            >
-              <img src={slide.image} alt="" />
-              <span>{slide.label || slide.title}</span>
+          <div className="sw-hero-arrows">
+            <button aria-label="Previous collection" onClick={() => go(current - 1)}>
+              <ArrowLeft size={17} />
             </button>
-          ))}
+            <button aria-label="Next collection" onClick={() => go(current + 1)}>
+              <ArrowRight size={17} />
+            </button>
+            <button aria-label={paused ? 'Play slideshow' : 'Pause slideshow'} onClick={() => setPaused(!paused)}>
+              {paused ? <Play size={14} /> : <Pause size={14} />}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      <a className="sw-hero-scroll" href="#after-hero" aria-label="Scroll to content">
+        <span>Scroll</span>
+        <i />
+      </a>
     </section>
   );
 }

@@ -2,6 +2,17 @@ import { Product } from './products';
 
 export const tabs = ['dashboard', 'pos', 'categories', 'products', 'banners', 'coupons', 'orders', 'reports', 'team'] as const;
 export type Tab = typeof tabs[number];
+export const tabLabels: Record<Tab, string> = {
+  dashboard: 'Dashboard',
+  pos: 'POS Billing',
+  categories: 'Categories',
+  products: 'Products',
+  banners: 'Hero banners',
+  coupons: 'Coupons & offers',
+  orders: 'Orders',
+  reports: 'Analytics & reports',
+  team: 'Sub-admins & access',
+};
 
 export type Category = { id: string; name: string; description: string; enabled: boolean; image?: string };
 

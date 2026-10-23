@@ -1,6 +1,82 @@
 'use client';
 import Link from 'next/link';
-import {ArrowUpRight,Heart,Leaf,Phone,MessageCircle,Truck,CalendarDays} from 'lucide-react';
-import {whatsapp} from '@/lib/products';
-import {useAuthUI} from './auth-dialog';
-export function SiteFooter(){const {user,openLogin}=useAuthUI();return <footer className="swaadha-footer"><div className="footer-invitation"><div><span>FROM OUR FAMILY TABLE TO YOURS</span><h2>A little homemade.<br/><em>A whole lot of heart.</em></h2></div><Link href="/products">Explore our kitchen <ArrowUpRight size={19}/></Link><span className="footer-petal" aria-hidden="true">✳</span></div><div className="footer-main"><div className="footer-identity"><Link href="/" aria-label="Swaadha home"><img src="/logo-transparent.png" alt="Swaadha — Taste That Feels Like Home"/></Link><p>Authentic flavors. Honest ingredients.<br/>Familiar recipes, lovingly made<br/>in our family kitchen in Bangalore.</p><span><Heart size={13}/> Taste that feels like home.</span></div><div className="footer-links"><h3>Make yourself at home</h3><Link href="/">Home</Link><Link href="/products">Our kitchen</Link><Link href="/our-story">Our story</Link><Link href="/contact">Contact us</Link>{user?<Link href="/account">My account</Link>:<button onClick={()=>openLogin()}>Login / Register</button>}</div><div className="footer-links"><h3>Find your favorite</h3><Link href="/products?category=Sweets">Traditional sweets</Link><Link href="/products?category=Snacks">Tea-time snacks</Link><Link href="/products?category=Pantry">Spices & pantry</Link><Link href="/wishlist">Your wishlist</Link><Link href="/cart">Your shopping bag</Link></div><div className="footer-contact"><h3>Let’s talk good food</h3><a href="tel:+918296295658" className="footer-call"><Phone size={17}/> +91 8296295658</a><p>For everyday cravings, special occasions,<br/>and a little help choosing your favorites.</p><a className="footer-chat" href={whatsapp('Hello Swaadha! I would like to know more about your homemade products.')} target="_blank" rel="noreferrer"><MessageCircle size={16}/> Chat with our kitchen <ArrowUpRight size={14}/></a><span>Bulk orders for gatherings of 100+ people.</span></div></div><div className="footer-service"><span><Leaf size={17}/> Made with natural ingredients</span><span><CalendarDays size={17}/> Fresh batches · order 6–7 days ahead</span><span><Truck size={18}/> Bangalore & across India</span></div><div className="footer-legal"><span>© {new Date().getFullYear()} Swaadha. All rights reserved.</span><span>Homemade in Bangalore. Shared with love.</span><Link href="/admin">Kitchen admin <ArrowUpRight size={11}/></Link></div></footer>}
+import { ArrowUpRight, CalendarDays, Leaf, MessageCircle, Phone, Truck } from 'lucide-react';
+import { whatsapp } from '@/lib/products';
+import { useAuthUI } from './auth-dialog';
+import { Lines, Ornament } from './motion';
+
+export function SiteFooter() {
+  const { user, openLogin } = useAuthUI();
+  return (
+    <footer className="sw-footer">
+      <section className="sw-footer-cta">
+        <Ornament />
+        <Lines lines={['A little homemade.', <em key="e">A whole lot of heart.</em>]} />
+        <div className="sw-footer-cta-actions" data-reveal="up">
+          <Link className="sw-btn is-gold" href="/products" data-magnetic>
+            <span>Explore our kitchen</span>
+            <ArrowUpRight size={18} />
+          </Link>
+          <a className="sw-btn is-ghost-light" href={whatsapp('Hello Swaadha! I would like to know more about your homemade products.')} target="_blank" rel="noreferrer" data-magnetic>
+            <MessageCircle size={17} />
+            <span>Say hello on WhatsApp</span>
+          </a>
+        </div>
+      </section>
+
+      <div className="sw-footer-grid" data-stagger>
+        <div className="sw-footer-brand" data-reveal="up">
+          <Link href="/" aria-label="Swaadha home">
+            <img src="/logo-transparent.png" alt="Swaadha — Taste That Feels Like Home" />
+          </Link>
+          <p>Authentic flavors. Honest ingredients. Familiar recipes, lovingly made in our family kitchen in Bangalore.</p>
+        </div>
+        <div className="sw-footer-col" data-reveal="up">
+          <h3>Visit</h3>
+          <Link href="/">Home</Link>
+          <Link href="/products">Our kitchen</Link>
+          <Link href="/our-story">Our story</Link>
+          <Link href="/contact">Contact us</Link>
+          {user ? <Link href="/account">My account</Link> : <button onClick={() => openLogin()}>Sign in / Register</button>}
+        </div>
+        <div className="sw-footer-col" data-reveal="up">
+          <h3>Shop</h3>
+          <Link href="/products?category=Sweets">Traditional sweets</Link>
+          <Link href="/products?category=Snacks">Tea-time snacks</Link>
+          <Link href="/products?category=Pantry">Spices & pantry</Link>
+          <Link href="/products?category=Pickles">Pickles</Link>
+          <Link href="/wishlist">Your wishlist</Link>
+        </div>
+        <div className="sw-footer-col" data-reveal="up">
+          <h3>Talk to us</h3>
+          <a href="tel:+918296295658" className="sw-footer-phone">
+            <Phone size={16} /> +91 82962 95658
+          </a>
+          <p>Everyday cravings, special occasions, and bulk orders for gatherings of 100+ people.</p>
+        </div>
+      </div>
+
+      <div className="sw-footer-service">
+        <span>
+          <Leaf size={16} /> Natural ingredients
+        </span>
+        <span>
+          <CalendarDays size={16} /> Order 6–7 days ahead
+        </span>
+        <span>
+          <Truck size={16} /> Bangalore & across India
+        </span>
+      </div>
+
+      <div className="sw-footer-legal">
+        <span>© {new Date().getFullYear()} Swaadha. All rights reserved.</span>
+        <span className="sw-footer-credit">
+          Designed &amp; developed by{' '}
+          <a href="https://rakvih.in" target="_blank" rel="noopener">
+            RAKVIH
+          </a>
+        </span>
+      </div>
+    </footer>
+  );
+}
