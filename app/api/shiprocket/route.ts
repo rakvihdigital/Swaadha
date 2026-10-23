@@ -22,7 +22,7 @@ export async function POST(request:NextRequest){
    if(!['confirmed','preparing'].includes(o.status))return NextResponse.json({error:'Confirm this order before sending it to Shiprocket.'},{status:400});
    if(o.shiprocket_order_id)return NextResponse.json({error:'This order already exists in Shiprocket.'},{status:409});
    if(o.payment_method!=='COD')return NextResponse.json({error:'Only COD checkout orders can be exported. Reconcile older manual orders separately.'},{status:400});
-   if(!o.city||!o.state||!/^[1-9][0-9]{5}$/.test(o.pincode||'')||!/^[6-9][0-9]{9}$/.test(o.phone)||!o.email)return NextResponse.json({error:'This order needs a complete city, state, pincode, email and mobile number. Older sample/manual orders cannot be shipped.'},{status:400});
+   if(!o.city||!o.state||!/^[1-9][0-9]{5}$/.test(o.pincode||'')||!/^[6-9][0-9]{9}$/.test(o.phone)||!o.email)return NextResponse.json({error:'This order needs a complete city, state, pincode, email and mobile number to generate shipping.'},{status:400});
    const pickup=process.env.SHIPROCKET_PICKUP_LOCATION;if(!pickup)return NextResponse.json({error:'Set the registered Shiprocket pickup location on the server.'},{status:503});
    const {length,breadth,height,weight}=body;if(![length,breadth,height,weight].every(v=>typeof v==='number'&&Number.isFinite(v)&&v>0)||[length,breadth,height].some(v=>v>200)||weight>100)return NextResponse.json({error:'Enter valid package dimensions in cm (up to 200) and weight in kg (up to 100).'},{status:400});
    const claim=await admin.rpc('claim_shipment',{p_id:o.id});if(claim.error||!claim.data)return NextResponse.json({error:'A shipment is already being created or needs reconciliation. Check Shiprocket before retrying.'},{status:409});claimed=true;
